@@ -39,6 +39,7 @@ export class AppComponent {
 
   InitializeForm() {
     this.employeeForm = this.FormBuilder.group({
+      id: [''],
       fullName: ['', Validators.required],
       email: ['', Validators.required],
       address: ['', Validators.required],
@@ -60,9 +61,7 @@ export class AppComponent {
     try {
       this.http.post('https://api.restful-api.dev/objects', requestDetails).subscribe((response: any) => {
         if (response) {
-          const button = document.getElementById('dismiss')
-          button.click()
-          this.dataupdated = false
+          this.cancel()
           const existids = JSON.parse(localStorage.getItem('ids'))
           let ids = []
           if (existids) {
@@ -71,7 +70,6 @@ export class AppComponent {
           ids.push(response.id)
           localStorage.setItem('ids', JSON.stringify(ids))
 
-          this.InitializeForm()
           this.getEmployees()
           return
         }
@@ -122,10 +120,89 @@ export class AppComponent {
 
   }
 
-  pagination(page:number){
+  pagination(page: number) {
     this.pageIndex = page  // update current page index
     const startIndex = (page - 1) * 3
     const endIndex = startIndex + 3
     this.filteremployees = this.employees.slice(startIndex, endIndex)
   }
+
+  cancel() {
+    const button = document.getElementById('dismiss')
+    button.click()
+    this.dataupdated = false
+    this.InitializeForm()
+  }
+
+  edit(item: any) {
+    this.employeeForm.get('id').patchValue(item.id)
+    this.employeeForm.patchValue(item.data)
+  }
+
+  UpdateEmployee() {
+    if (this.employeeForm.invalid) {
+      return
+    }
+
+    const requestDetails = {
+      name: 'Amazon',
+      data: this.employeeForm.value
+    }
+    console.log(requestDetails);
+
+    try {
+      this.http.post('https://api.restful-api.dev/objects/' + this.employeeForm.get('id').value, requestDetails).subscribe((response: any) => {
+        if (response) {
+          const button = document.getElementById('dismiss')
+          button.click()
+          this.dataupdated = false
+          const existids = JSON.parse(localStorage.getItem('ids'))
+          let ids = []
+          if (existids) {
+            ids = [...existids]
+          }
+          ids.push(response.id)
+          localStorage.setItem('ids', JSON.stringify(ids))
+
+          this.InitializeForm()
+          this.getEmployees()
+          return
+        }
+        console.log('Failed to fetch employees');
+      })
+
+    } catch (error) {
+      // error
+    }
+
+  }
+
+  DeleteEmployee(id: string) {
+    if (!id) {
+      return
+    }
+
+    try {
+      this.http.delete('https://api.restful-api.dev/objects/' + id).subscribe((response: any) => {
+        if (response) {
+          this.cancel()
+          const existids = JSON.parse(localStorage.getItem('ids'))
+          let ids = []
+          if (existids) {
+            ids = [...existids]
+          }
+          ids.push(response.id)
+          localStorage.setItem('ids', JSON.stringify(ids))
+          this.getEmployees()
+          return
+        }
+        console.log('Failed to fetch employees');
+      })
+
+    } catch (error) {
+      // error
+    }
+
+  }
+
 }
