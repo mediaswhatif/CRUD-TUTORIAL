@@ -24,10 +24,11 @@ class employee {
 })
 export class AppComponent {
 
+  employeeForm: FormGroup
   employees: employee[] = [];
   filteremployees: employee[] = [];
   dataupdated: boolean = false;
-  employeeForm: FormGroup
+  pageIndex: number = 1
 
   constructor(private http: HttpClient, private FormBuilder: FormBuilder) {
     this.getEmployees()
@@ -122,6 +123,7 @@ export class AppComponent {
   }
 
   pagination(page:number){
+    this.pageIndex = page  // update current page index
     const startIndex = (page - 1) * 3
     const endIndex = startIndex + 3
     this.filteremployees = this.employees.slice(startIndex, endIndex)
